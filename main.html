@@ -1,24 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <title>Image search engine</title>
+    <link rel="stylesheet" href="style.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discover Images</title>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"
     />
-    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
   </head>
   <body>
-    <form id="search">
-      <div class="search-bar-container">
-        <input type="text" id="search-bar" placeholder="Search images here.." />
-        <i class="fa-solid fa-magnifying-glass"></i>
+    <div class="lightbox">
+      <div class="wrapper">
+        <header>
+          <div class="photographer">
+            <i class="uil uil-camera"></i>
+            <span></span>
+          </div>
+          <div class="buttons">
+            <i class="uil uil-import"></i>
+            <i class="close-icon uil uil-times"></i>
+          </div>
+        </header>
+        <div class="preview-img">
+          <div class="img"><img src="" alt="preview-img" /></div>
+        </div>
       </div>
-    </form>
-    <div id="result"></div>
-    <button id="more">load more..</button>
-    <script src="script.js"></script>
+    </div>
+    <section class="search">
+      <div class="search-box">
+        <i class="uil uil-search"></i>
+        <input type="text" placeholder="Search images" />
+      </div>
+    </section>
+    <section class="gallery">
+      <ul class="images"></ul>
+      <button class="load-more">Show more..</button>
+    </section>
   </body>
 </html>

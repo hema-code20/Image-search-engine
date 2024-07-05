@@ -1,41 +1,99 @@
-const accessKey = "uYN4avswUHVppieacekj95LqYY7dKU205Fkisk5GB5s";
-const searchForm = document.getElementById('search');
-const searchBar = document.getElementById('search-bar');
-const searchResult = document.getElementById('result');
-const showmoreBtn = document.getElementById('more');
+const imageWrapper = document.querySelector(".images");
+const searchInput = document.querySelector(".search input");
+const loadMoreBtn = document.querySelector(".gallery .load-more");
+const lightbox = document.querySelector(".lightbox");
+const downloadImgBtn = lightbox.querySelector(".uil-import");
+const closeImgBtn = lightbox.querySelector(".close-icon");
 
-let keyword = "";
-let page = 1;
-async function searchImage() {
-    keyword = searchBar.value;
-    const url = `https://api.unsplash.com/search/photos?page=${page}&query=${keyword}&client_id=${accessKey}&per_page=15`;
+const apiKey = "wxR8lY85UcjGbUFKnMnRCQCFNi5vsLaViRNYv3m2DbaHfAEna36q0QX7";
+const perPage = 15;
+let currentPage = 1;
+let searchTerm = null;
 
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (page === 1) {
-        searchResult.innerHTML = "";
-    }
-
-
-    const results = data.results;
-    results.map((result) => {
-        const image = document.createElement('img');
-        image.src = result.urls.regular;
-        const imageLink = document.createElement('a');
-        imageLink.href = result.links.self;
-        imageLink.traget = '_blank';
-        imageLink.appendChild(image);
-        searchResult.appendChild(imageLink);
+const downloadImg = (imgUrl) => {
+  fetch(imgUrl)
+    .then((res) => res.blob())
+    .then((blob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = new Date().getTime();
+      a.click();
     })
-    showmoreBtn.style.display = "block";
-}
-searchForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    page = 1;
-    searchImage();
-})
-showmoreBtn.addEventListener('click', () => {
-    page++;
-    searchImage();
-})
+    .catch(() => alert("Download failed!!"));
+};
+
+const showLightbox = (name, img) => {
+  lightbox.querySelector("img").src = img;
+  lightbox.querySelector("span").innerText = name;
+  downloadImgBtn.setAttribute("data-img", img);
+  lightbox.classList.add("show");
+  document.body.style.overflow = "hidden";
+};
+
+const hideLightbox = () => {
+  lightbox.classList.remove("show");
+  document.body.style.overflow = "auto";
+};
+
+const generateHTML = (images) => {
+  imageWrapper.innerHTML += images
+    .map(
+      (img) =>
+        `<li class="card">
+            <img onclick="showLightbox('${img.photographer}', '${img.src.large2x}')" src="${img.src.large2x}" alt="img">
+            <div class="details">
+                <button onclick="downloadImg('${img.src.large2x}');">
+                    <i class="uil uil-import"></i>
+                </button>
+            </div>
+        </li>`
+    )
+    .join("");
+};
+
+const getImages = (apiURL) => {
+  searchInput.blur();
+  loadMoreBtn.innerText = "Loading...";
+  loadMoreBtn.classList.add("disabled");
+  fetch(apiURL, {
+    headers: { Authorization: apiKey },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      generateHTML(data.photos);
+      loadMoreBtn.innerText = "Show more";
+      loadMoreBtn.classList.remove("disabled");
+    })
+    .catch(() => alert("Loading failed!!"));
+};
+
+const loadMoreImages = () => {
+  currentPage++;
+  let apiUrl = `https://api.pexels.com/v1/curated?page=${currentPage}&per_page=${perPage}`;
+  apiUrl = searchTerm
+    ? `https://api.pexels.com/v1/search?query=${searchTerm}&page=${currentPage}&per_page=${perPage}`
+    : apiUrl;
+  getImages(apiUrl);
+};
+
+const loadSearchImages = (e) => {
+  if (e.target.value === "") return (searchTerm = null);
+  if (e.key === "Enter") {
+    currentPage = 1;
+    searchTerm = e.target.value;
+    imageWrapper.innerHTML = "";
+    getImages(
+      `https://api.pexels.com/v1/search?query=${searchTerm}&page=1&per_page=${perPage}`
+    );
+  }
+};
+
+getImages(
+  `https://api.pexels.com/v1/curated?page=${currentPage}&per_page=${perPage}`
+);
+loadMoreBtn.addEventListener("click", loadMoreImages);
+searchInput.addEventListener("keyup", loadSearchImages);
+closeImgBtn.addEventListener("click", hideLightbox);
+downloadImgBtn.addEventListener("click", (e) =>
+  downloadImg(e.target.dataset.img)
+);
